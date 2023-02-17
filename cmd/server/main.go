@@ -63,14 +63,10 @@ func main() {
 
 	gin.SetMode(gin.DebugMode)
 
-	routerApp := gin.Default()
-	routerApp.Use(cors.Default())
-
-	routerApp.GET("/abc", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"a": "b"})
-	})
-	routerApp.StaticFS("/web", http.Dir("../../web/"))
-	routerApp.POST("/sdp", func(c *gin.Context) {
+	router := gin.Default()
+	router.Use(cors.Default())
+	router.StaticFS("/web", http.Dir("./web/"))
+	router.POST("/sdp", func(c *gin.Context) {
 
 		// Read request body
 		requestBody, err := io.ReadAll(c.Request.Body)
@@ -202,5 +198,5 @@ func main() {
 		c.JSON(http.StatusOK, sdpResponse)
 	})
 
-	http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", *httpPort), routerApp)
+	http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", *httpPort), router)
 }
