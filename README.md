@@ -1,8 +1,4 @@
 
-# webrtc-poc
+# webrtc-rtt
 
-## Usage
-
-```
-sh run.sh
-```
+Simple test project to display the RTT/SRTT from the pion/sctp library.
