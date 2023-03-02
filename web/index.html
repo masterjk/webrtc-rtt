@@ -3,19 +3,9 @@
     <title>Test Page</title>
     <script>
 
-        function sleep(milliseconds) {
-            const date = Date.now();
-            let currentDate = null;
-            console.log("sleeping now");
-            do {
-                currentDate = Date.now();
-            } while (currentDate - date < milliseconds);
-            console.log("sleeping done!");
-        }
-
         function log(message) {
             let date = new Date().toISOString();
-            console.log(`[${date}] ${message}`);
+            document.getElementById("logs").innerHTML = document.getElementById("logs").innerHTML + `[${date}] ${message}<br/>`;
         }
 
         var debug = true;
@@ -70,19 +60,15 @@
             }
         )};
 
-        sendChannel = peerConnection.createDataChannel('channel');
+        sendChannel = peerConnection.createDataChannel('channel', { ordered: true });
 
         sendChannel.onopen = () => {
             debug && log("Data channel opened")
-
-            setInterval(function() {
-                sleep(300);
-            }, 100)
         };
 
         sendChannel.onmessage = (event) => {
             var now = Date.now();
-            log(`Last Received: ${now - this.lastReceived}; Payload: ${event.data}`);
+            log(`${event.data}`);
             this.lastReceived = now;
         }
 
@@ -95,6 +81,7 @@
 </head>
 
 <body>
-
+<h1>WebRTC SRTT Test</h1>
+<pre id="logs"></pre>
 </body>
 </html>

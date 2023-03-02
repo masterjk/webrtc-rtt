@@ -124,12 +124,13 @@ func getAssociationStateString(a uint32) string {
 //
 // Tag         :
 // State       : A state variable indicating what state the association
-//             : is in, i.e., COOKIE-WAIT, COOKIE-ECHOED, ESTABLISHED,
-//             : SHUTDOWN-PENDING, SHUTDOWN-SENT, SHUTDOWN-RECEIVED,
-//             : SHUTDOWN-ACK-SENT.
 //
-//               Note: No "CLOSED" state is illustrated since if a
-//               association is "CLOSED" its TCB SHOULD be removed.
+//	: is in, i.e., COOKIE-WAIT, COOKIE-ECHOED, ESTABLISHED,
+//	: SHUTDOWN-PENDING, SHUTDOWN-SENT, SHUTDOWN-RECEIVED,
+//	: SHUTDOWN-ACK-SENT.
+//
+//	  Note: No "CLOSED" state is illustrated since if a
+//	  association is "CLOSED" its TCB SHOULD be removed.
 type Association struct {
 	bytesReceived uint64
 	bytesSent     uint64
@@ -223,6 +224,9 @@ type Association struct {
 
 	name string
 	log  logging.LeveledLogger
+
+	rtt  float64
+	srtt float64
 }
 
 // Config collects the arguments to createAssociation construction into
@@ -1453,6 +1457,9 @@ func (a *Association) processSelectiveAck(d *chunkSelectiveAck) (map[uint16]int,
 				srtt := a.rtoMgr.setNewRTT(rtt)
 				a.log.Tracef("[%s] SACK: measured-rtt=%f srtt=%f new-rto=%f",
 					a.name, rtt, srtt, a.rtoMgr.getRTO())
+
+				a.rtt = rtt
+				a.srtt = srtt
 			}
 		}
 
@@ -1491,6 +1498,9 @@ func (a *Association) processSelectiveAck(d *chunkSelectiveAck) (map[uint16]int,
 					srtt := a.rtoMgr.setNewRTT(rtt)
 					a.log.Tracef("[%s] SACK: measured-rtt=%f srtt=%f new-rto=%f",
 						a.name, rtt, srtt, a.rtoMgr.getRTO())
+
+					a.rtt = rtt
+					a.srtt = srtt
 				}
 
 				if sna32LT(htna, tsn) {
@@ -2572,4 +2582,12 @@ func (a *Association) PartialBytesAcked() uint32 {
 
 func (a *Association) InFastRecovery() bool {
 	return a.inFastRecovery
+}
+
+func (a *Association) RTT() float64 {
+	return a.rtt
+}
+
+func (a *Association) SRTT() float64 {
+	return a.srtt
 }

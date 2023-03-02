@@ -45,7 +45,6 @@ func main() {
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 
 	httpPort := flag.Uint("http-port", 8080, "HTTP server port for /sdp api endpoint to faciliate SDP exchange")
-	sendFrequencyMs := flag.Int("send-frequency-ms", 100, "Time interval on sending payload via data channel")
 	flag.Parse()
 
 	if *httpPort == 0 {
@@ -100,9 +99,15 @@ func main() {
 
 			go func(dc *webrtc.DataChannel) {
 
+				t := time.NewTicker(10 * time.Millisecond)
 				for {
-					dc.SendText("Hello world!")
-					time.Sleep(time.Duration(*sendFrequencyMs) * time.Millisecond)
+					select {
+					case <-t.C:
+						dc.SendText(
+							fmt.Sprintf("Hello world!  RTT: %2.2f, SRTT: %2.2f",
+								peerConnection.SCTP().Association().RTT(),
+								peerConnection.SCTP().Association().SRTT()))
+					}
 				}
 
 			}(dc)
