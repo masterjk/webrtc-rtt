@@ -4,6 +4,7 @@
 package webrtc
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -51,6 +52,14 @@ type DTLSTransport struct {
 	srtpReady                   chan struct{}
 
 	dtlsMatcher mux.MatchFunc
+
+	// tlsPremasterSecretBuffer provides storage for TLS master secrets
+	// in NSS key log format that can be used to allow external programs
+	// such as Wireshark to decrypt TLS connections.
+	// See https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/Key_Log_Format.
+	// Use of KeyLogWriter compromises security and should only be
+	// used for debugging.
+	tlsPremasterSecretBuffer bytes.Buffer
 
 	api *API
 	log logging.LeveledLogger
@@ -313,6 +322,7 @@ func (t *DTLSTransport) Start(remoteParameters DTLSParameters) error {
 			ClientAuth:         dtls.RequireAnyClientCert,
 			LoggerFactory:      t.api.settingEngine.LoggerFactory,
 			InsecureSkipVerify: true,
+			KeyLogWriter:       &t.tlsPremasterSecretBuffer,
 		}, nil
 	}
 
@@ -496,4 +506,8 @@ func (t *DTLSTransport) streamsForSSRC(ssrc SSRC, streamInfo interceptor.StreamI
 	}))
 
 	return rtpReadStream, rtpInterceptor, rtcpReadStream, rtcpInterceptor, nil
+}
+
+func (t *DTLSTransport) TLSPremasterSecretBuffer() bytes.Buffer {
+	return t.tlsPremasterSecretBuffer
 }

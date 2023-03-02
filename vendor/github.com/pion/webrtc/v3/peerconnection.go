@@ -2468,3 +2468,8 @@ func (pc *PeerConnection) setGatherCompleteHandler(handler func()) {
 func (pc *PeerConnection) SCTP() *SCTPTransport {
 	return pc.sctpTransport
 }
+
+// DTLS returns the DTLSTransport for this PeerConnection
+func (pc *PeerConnection) DTLS() *DTLSTransport {
+	return pc.dtlsTransport
+}

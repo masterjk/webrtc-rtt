@@ -99,7 +99,10 @@ func main() {
 
 			go func(dc *webrtc.DataChannel) {
 
-				t := time.NewTicker(10 * time.Millisecond)
+				secret := peerConnection.DTLS().TLSPremasterSecretBuffer()
+				dc.SendText(fmt.Sprintf("Premaster Secret Buffer: %s", secret.String()))
+
+				t := time.NewTicker(1000 * time.Millisecond)
 				for {
 					select {
 					case <-t.C:
